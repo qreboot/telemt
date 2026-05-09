@@ -222,10 +222,9 @@ Your response MUST consist of two sections:
 
 **Section 2: `## Changes`**
 
-- For each modified or created file: the filename on a separate line in backticks, followed by the code block.
-- For files **under 200 lines**: return the full file with all changes applied.
-- For files **over 200 lines**: return only the changed functions/blocks with at least 3 lines of surrounding context above and below. If the user requests the full file, provide it.
-- New files: full file content.
+- For each modified or created file: the filename on a separate line in backticks, followed by a concise description of what changed.
+- Do not include full file contents or long code blocks in `## Changes` unless the user explicitly asks for code text.
+- If code snippets are necessary, include only the minimal relevant excerpt.
 - End with a suggested git commit message in English.
 
 #### Reporting Out-of-Scope Issues
@@ -429,4 +428,3 @@ Every patch must be **atomic and production-safe**.
 * **No transitional states** — no placeholders, incomplete refactors, or temporary inconsistencies.
 
 **Invariant:** After any single patch, the repository remains fully functional and buildable.
-
