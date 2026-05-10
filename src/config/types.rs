@@ -543,10 +543,17 @@ pub struct GeneralConfig {
     pub me_d2c_frame_buf_shrink_threshold_bytes: usize,
 
     /// Copy buffer size for client->DC direction in direct relay.
+    ///
+    /// This is also the upper bound for one amortized upload rate-limit burst:
+    /// upload debt is settled before the next relay read instead of blocking
+    /// inside the completed read path.
     #[serde(default = "default_direct_relay_copy_buf_c2s_bytes")]
     pub direct_relay_copy_buf_c2s_bytes: usize,
 
     /// Copy buffer size for DC->client direction in direct relay.
+    ///
+    /// This bounds one direct download rate-limit grant because writes are
+    /// clipped to the currently available shaper budget.
     #[serde(default = "default_direct_relay_copy_buf_s2c_bytes")]
     pub direct_relay_copy_buf_s2c_bytes: usize,
 
@@ -1891,14 +1898,17 @@ pub struct AccessConfig {
     ///
     /// Each entry supports independent upload (`up_bps`) and download
     /// (`down_bps`) ceilings. A value of `0` in one direction means
-    /// "unlimited" for that direction.
+    /// "unlimited" for that direction. Limits are amortized: a relay quantum
+    /// may pass as a bounded burst, and the limiter applies the resulting wait
+    /// before later traffic in the same direction proceeds.
     #[serde(default)]
     pub user_rate_limits: HashMap<String, RateLimitBps>,
 
     /// Per-CIDR aggregate transport rate limits in bits-per-second.
     ///
     /// Matching uses longest-prefix-wins semantics. A value of `0` in one
-    /// direction means "unlimited" for that direction.
+    /// direction means "unlimited" for that direction. Limits are amortized
+    /// with the same bounded-burst contract as per-user rate limits.
     #[serde(default)]
     pub cidr_rate_limits: HashMap<IpNetwork, RateLimitBps>,
 

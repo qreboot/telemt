@@ -901,6 +901,32 @@ async fn render_metrics(
     let limiter_metrics = shared_state.traffic_limiter.metrics_snapshot();
     let _ = writeln!(
         out,
+        "# HELP telemt_rate_limiter_burst_bound_bytes Configured upper bound for one direct relay rate-limit burst"
+    );
+    let _ = writeln!(
+        out,
+        "# TYPE telemt_rate_limiter_burst_bound_bytes gauge"
+    );
+    let _ = writeln!(
+        out,
+        "telemt_rate_limiter_burst_bound_bytes{{direction=\"up\"}} {}",
+        if core_enabled {
+            config.general.direct_relay_copy_buf_c2s_bytes
+        } else {
+            0
+        }
+    );
+    let _ = writeln!(
+        out,
+        "telemt_rate_limiter_burst_bound_bytes{{direction=\"down\"}} {}",
+        if core_enabled {
+            config.general.direct_relay_copy_buf_s2c_bytes
+        } else {
+            0
+        }
+    );
+    let _ = writeln!(
+        out,
         "# HELP telemt_rate_limiter_throttle_total Traffic limiter throttle events by scope and direction"
     );
     let _ = writeln!(out, "# TYPE telemt_rate_limiter_throttle_total counter");
